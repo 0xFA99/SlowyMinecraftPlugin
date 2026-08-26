@@ -1,0 +1,101 @@
+{
+  "type": "minecraft:multi_action",
+  "title": {
+    "text": "Privacy Settings"
+  },
+  "pause": false,
+  "after_action": "none",
+  "columns": 1,
+  "actions": [
+    {
+      "label": {
+        "text": "Teleport Requests: ",
+        "extra": [
+          {
+            "text": "Friends",
+            "color": "yellow"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Teleport Requests"
+      }
+    },
+    {
+      "label": {
+        "text": "Teleport-Here Requests: ",
+        "extra": [
+          {
+            "text": "Friends",
+            "color": "yellow"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Teleport-Here Requests"
+      }
+    },
+    {
+      "label": {
+        "text": "Allow Payments: ",
+        "extra": [
+          {
+            "text": "Anyone",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Allow Payments"
+      }
+    },
+    {
+      "label": {
+        "text": "Randomized Coords: ",
+        "extra": [
+          {
+            "text": "OFF",
+            "color": "red"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Randomized Coords"
+      }
+    },
+    {
+      "label": {
+        "text": "Private Transactions: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Private Transactions"
+      }
+    }
+  ],
+  "exit_action": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog",
+      "dialog": "slowy:settings_dialog"
+    },
+    "width": 200
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "type": "minecraft:multi_action",
+  "title": {
+    "translate": "menu.custom_options.title"
+  },
+  "pause": false,
+  "after_action": "none",
+  "body": {
+    "type": "minecraft:plain_message",
+    "contents": {
+      "text": "Choose a category to change your Slowy SMP settings",
+      "color": "gray"
+    }
+  },
+  "exit_action": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog",
+      "dialog": "slowy:greeting_dialog"
+    },
+    "width": 200
+  },
+  "columns": 2,
+  "actions": [
+    {
+      "label": {
+        "text": "🪧 Chat"
+      },
+      "width": 150,
+      "action": {
+        "type": "minecraft:show_dialog",
+        "dialog": "slowy:settings_chat_dialog"
+      }
+    },
+    {
+      "label": {
+        "text": "🔔 Notifications"
+      },
+      "width": 150,
+      "action": {
+        "type": "minecraft:show_dialog",
+        "dialog": "slowy:settings_notifications_dialog"
+      }
+    },
+    {
+      "label": {
+        "text": "⚔ PvP"
+      },
+      "width": 150,
+      "action": {
+        "type": "minecraft:show_dialog",
+        "dialog": "slowy:settings_pvp_dialog"
+      }
+    },
+    {
+      "label": {
+        "text": "🔭 Visuals"
+      },
+      "width": 150,
+      "action": {
+        "type": "minecraft:show_dialog",
+        "dialog": "slowy:settings_visuals_dialog"
+      }
+    },
+    {
+      "label": {
+        "text": "🔒 Privacy"
+      },
+      "width": 150,
+      "action": {
+        "type": "minecraft:show_dialog",
+        "dialog": "slowy:settings_privacy_dialog"
+      }
+    },
+    {
+      "label": {
+        "text": "📄 Scoreboard"
+      },
+      "width": 150,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "/customsettings scoreboard"
+      }
+    },
+    {
+      "label": {
+        "text": "📄 General"
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:show_dialog",
+        "dialog": "slowy:settings_general_dialog"
+      }
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "type": "minecraft:multi_action",
+  "title": {
+    "text": "General Settings"
+  },
+  "pause": false,
+  "after_action": "none",
+  "columns": 1,
+  "actions": [
+    {
+      "label": {
+        "text": "Auction Quick Buy: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Auction Quick Buy"
+      }
+    },
+    {
+      "label": {
+        "text": "Auction Quick Sell: ",
+        "extra": [
+          {
+            "text": "OFF",
+            "color": "red"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Auction Quick Sell"
+      }
+    },
+    {
+      "label": {
+        "text": "Mob Spawns: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Mob Spawns"
+      }
+    },
+    {
+      "label": {
+        "text": "Phantom Spawning: ",
+        "extra": [
+          {
+            "text": "OFF",
+            "color": "red"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Phantom Spawning"
+      }
+    },
+    {
+      "label": {
+        "text": "Night Vision: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Night Vision"
+      }
+    },
+    {
+      "label": {
+        "text": "Destroy Pearl on Death: ",
+        "extra": [
+          {
+            "text": "OFF",
+            "color": "red"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Destroy Pearl on Death"
+      }
+    }
+  ],
+  "exit_action": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog",
+      "dialog": "slowy:settings_dialog"
+    },
+    "width": 200
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "type": "minecraft:multi_action",
+  "title": {
+    "text": "PvP Settings"
+  },
+  "pause": false,
+  "after_action": "none",
+  "columns": 1,
+  "actions": [
+    {
+      "label": {
+        "text": "Fast Crystals: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Fast Crystals"
+      }
+    },
+    {
+      "label": {
+        "text": "Totem Particles: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Totem Particles"
+      }
+    },
+    {
+      "label": {
+        "text": "Explosion Particles: ",
+        "extra": [
+          {
+            "text": "OFF",
+            "color": "red"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Explosion Particles"
+      }
+    },
+    {
+      "label": {
+        "text": "Explosion Sounds: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Explosion Sounds"
+      }
+    },
+    {
+      "label": {
+        "text": "Combat Timer: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Combat Timer"
+      }
+    }
+  ],
+  "exit_action": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog",
+      "dialog": "slowy:settings_dialog"
+    },
+    "width": 200
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "type": "minecraft:multi_action",
+  "title": {
+    "text": "Visual Settings"
+  },
+  "pause": false,
+  "after_action": "none",
+  "columns": 1,
+  "actions": [
+    {
+      "label": {
+        "text": "Money Nametags: ",
+        "extra": [
+          {
+            "text": "OFF",
+            "color": "red"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Money Nametags"
+      }
+    },
+    {
+      "label": {
+        "text": "Item Worth Lore: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Item Worth Lore"
+      }
+    },
+    {
+      "label": {
+        "text": "Teleport Confirm Menus: ",
+        "extra": [
+          {
+            "text": "OFF",
+            "color": "red"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Teleport Confirm Menus"
+      }
+    }
+  ],
+  "exit_action": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog",
+      "dialog": "slowy:settings_dialog"
+    },
+    "width": 200
+  }
+}

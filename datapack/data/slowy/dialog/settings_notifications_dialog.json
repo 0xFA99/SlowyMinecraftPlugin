@@ -1,0 +1,133 @@
+{
+  "type": "minecraft:multi_action",
+  "title": {
+    "text": "Notification Settings"
+  },
+  "pause": false,
+  "after_action": "none",
+  "columns": 1,
+  "actions": [
+    {
+      "label": {
+        "text": "Pay Alerts: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Pay Alerts"
+      }
+    },
+    {
+      "label": {
+        "text": "Teleport Alerts: ",
+        "extra": [
+          {
+            "text": "OFF",
+            "color": "red"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Teleport Alerts"
+      }
+    },
+    {
+      "label": {
+        "text": "Bounty Alerts: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Bounty Alerts"
+      }
+    },
+    {
+      "label": {
+        "text": "Auction Alerts: ",
+        "extra": [
+          {
+            "text": "OFF",
+            "color": "red"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Auction Alerts"
+      }
+    },
+    {
+      "label": {
+        "text": "Order Alerts: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Order Alerts"
+      }
+    },
+    {
+      "label": {
+        "text": "Server Sounds: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Server Sounds"
+      }
+    },
+    {
+      "label": {
+        "text": "Follow Alerts: ",
+        "extra": [
+          {
+            "text": "OFF",
+            "color": "red"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Follow Alerts"
+      }
+    }
+  ],
+  "exit_action": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog",
+      "dialog": "slowy:settings_dialog"
+    },
+    "width": 200
+  }
+}

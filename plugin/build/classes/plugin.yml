@@ -1,0 +1,27 @@
+name: Slowy
+version: 1.0.0
+main: com.slowy.SlowyPlugin
+api-version: '1.21'
+softdepend: [UltimateDonutSmp, Essentials, Vault]
+commands:
+  customhomes:
+    description: Open dynamic homes dialog
+    usage: /<command>
+  customsettings:
+    description: Open dynamic settings dialog
+    aliases: [sbsettings, slowysettings]
+    usage: /<command>
+  custompay:
+    description: Open dynamic pay dialog
+    aliases: [slowypay]
+    usage: /<command>
+permissions:
+  slowy.homes.dialog:
+    description: Allows opening custom homes dialog
+    default: true
+  slowy.settings.dialog:
+    description: Allows opening custom settings dialog
+    default: true
+  slowy.pay.dialog:
+    description: Allows opening custom pay dialog
+    default: true

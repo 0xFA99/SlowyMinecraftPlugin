@@ -1,0 +1,92 @@
+{
+  "type": "minecraft:multi_action",
+  "title": "Slow SMP",
+  "external_title": "Slowy SMP",
+  "pause": false,
+  "after_action": "none",
+  "columns": 2,
+  "actions": [
+    {
+      "label": "Homes",
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "/customhomes"
+      }
+    },
+    {
+      "label": "RTP",
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "/rtp"
+      }
+    },
+    {
+      "label": "Auction",
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "/ah"
+      }
+    },
+    {
+      "label": "RTP Queue",
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "/rtpq"
+      }
+    },
+    {
+      "label": "Quick Buy",
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "/shop"
+      }
+    },
+    {
+      "label": "Friends",
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "/friends"
+      }
+    },
+    {
+      "label": "Orders",
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "/orders"
+      }
+    },
+    {
+      "label": "Shard Shop"
+    },
+    {
+      "label": "Sell",
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "/sell"
+      }
+    },
+    {
+      "label": "Pay",
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "/custompay"
+      }
+    },
+    {
+      "label": "Teleport"
+    },
+    {
+      "label": "Stats"
+    },
+    {
+      "label": "Leaderboards"
+    },
+    {
+      "label": "Settings",
+      "action": {
+        "type": "minecraft:show_dialog",
+        "dialog": "slowy:settings_dialog"
+      }
+    }
+  ]
+}

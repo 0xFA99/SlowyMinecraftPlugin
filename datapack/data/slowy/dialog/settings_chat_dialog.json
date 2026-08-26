@@ -1,0 +1,133 @@
+{
+  "type": "minecraft:multi_action",
+  "title": {
+    "text": "Chat Settings"
+  },
+  "pause": false,
+  "after_action": "none",
+  "columns": 1,
+  "actions": [
+    {
+      "label": {
+        "text": "Public Chat: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Public Chat"
+      }
+    },
+    {
+      "label": {
+        "text": "Private Messages: ",
+        "extra": [
+          {
+            "text": "Anyone",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Private Messages"
+      }
+    },
+    {
+      "label": {
+        "text": "Server Chat Messages: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Server Chat Messages"
+      }
+    },
+    {
+      "label": {
+        "text": "Server Hotbar Messages: ",
+        "extra": [
+          {
+            "text": "ON",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Server Hotbar Messages"
+      }
+    },
+    {
+      "label": {
+        "text": "Death Messages: ",
+        "extra": [
+          {
+            "text": "Anyone",
+            "color": "green"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Death Messages"
+      }
+    },
+    {
+      "label": {
+        "text": "Advancement Messages: ",
+        "extra": [
+          {
+            "text": "Friends",
+            "color": "yellow"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Advancement Messages"
+      }
+    },
+    {
+      "label": {
+        "text": "Join/Leave Messages: ",
+        "extra": [
+          {
+            "text": "Friends",
+            "color": "yellow"
+          }
+        ]
+      },
+      "width": 200,
+      "action": {
+        "type": "minecraft:run_command",
+        "command": "say Join/Leave Messages"
+      }
+    }
+  ],
+  "exit_action": {
+    "label": {
+      "translate": "gui.back"
+    },
+    "action": {
+      "type": "minecraft:show_dialog",
+      "dialog": "slowy:settings_dialog"
+    },
+    "width": 200
+  }
+}
