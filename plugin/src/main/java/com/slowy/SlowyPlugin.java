@@ -26,10 +26,19 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import dev.geco.gsit.api.event.PrePlayerPlayerSitEvent;
+import net.citizensnpcs.api.CitizensAPI;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import org.bukkit.event.entity.EntityToggleGlideEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerAdvancementDoneEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerCommandSendEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -39,28 +48,36 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 public class SlowyPlugin extends JavaPlugin implements CommandExecutor, Listener {
 
     public static final int MAX_HOME_NAME_LENGTH = 12;
-    public static final int MAX_HOME_SLOTS = 3;
-    public static final int BUTTON_WIDTH_12_CHARS = 80;
+    public static final int MAX_HOME_SLOTS = 6;
+    public static final int BUTTON_WIDTH_12_CHARS = 150;
+    public static final Set<String> BLOCKED_HOME_WORLDS = Set.of("lobby2", "minecraft:lobby2");
 
     private static final ItemStack BED_ITEM = new ItemStack(Material.WHITE_BED);
 
     private ScoreboardSettingsManager scoreboardSettingsManager;
+    private ChatSettingsManager chatSettingsManager;
     private CustomScoreboardManager customScoreboardManager;
     private PayListManager payListManager;
     private PayDialogManager payDialogManager;
+    private LeaderboardHologramManager leaderboardHologramManager;
 
     @Override
     public void onEnable() {
         this.scoreboardSettingsManager = new ScoreboardSettingsManager(this);
+        this.chatSettingsManager = new ChatSettingsManager(this);
         this.customScoreboardManager = new CustomScoreboardManager(this);
         this.customScoreboardManager.start();
 
         this.payListManager = new PayListManager(this);
         this.payDialogManager = new PayDialogManager(this, payListManager);
+
+        this.leaderboardHologramManager = new LeaderboardHologramManager(this);
+        this.leaderboardHologramManager.start();
 
         if (getCommand("customhomes") != null) {
             getCommand("customhomes").setExecutor(this);
@@ -78,15 +95,25 @@ public class SlowyPlugin extends JavaPlugin implements CommandExecutor, Listener
 
     @Override
     public void onDisable() {
+        if (leaderboardHologramManager != null) {
+            leaderboardHologramManager.stop();
+        }
         if (customScoreboardManager != null) {
             customScoreboardManager.stop();
         }
         if (scoreboardSettingsManager != null) {
             scoreboardSettingsManager.saveAll();
         }
+        if (chatSettingsManager != null) {
+            chatSettingsManager.saveAll();
+        }
         if (payListManager != null) {
             payListManager.saveAllSync();
         }
+    }
+
+    public LeaderboardHologramManager getLeaderboardHologramManager() {
+        return leaderboardHologramManager;
     }
 
     public CustomScoreboardManager getCustomScoreboardManager() {
@@ -95,6 +122,10 @@ public class SlowyPlugin extends JavaPlugin implements CommandExecutor, Listener
 
     public ScoreboardSettingsManager getScoreboardSettingsManager() {
         return scoreboardSettingsManager;
+    }
+
+    public ChatSettingsManager getChatSettingsManager() {
+        return chatSettingsManager;
     }
 
     public PayListManager getPayListManager() {
@@ -114,12 +145,199 @@ public class SlowyPlugin extends JavaPlugin implements CommandExecutor, Listener
                 }
             }, 10L);
         }
+
+        Player joining = event.getPlayer();
+        Component joinMsg = event.joinMessage();
+        if (joinMsg != null) {
+            event.joinMessage(null);
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                if (shouldReceiveJoinLeave(p, joining)) {
+                    p.sendMessage(joinMsg);
+                }
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
         if (customScoreboardManager != null) {
             customScoreboardManager.removeScoreboard(event.getPlayer());
+        }
+
+        Player quitting = event.getPlayer();
+        Component quitMsg = event.quitMessage();
+        if (quitMsg != null) {
+            event.quitMessage(null);
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                if (!p.getUniqueId().equals(quitting.getUniqueId()) && shouldReceiveJoinLeave(p, quitting)) {
+                    p.sendMessage(quitMsg);
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onAsyncChat(AsyncChatEvent event) {
+        event.viewers().removeIf(audience -> {
+            if (audience instanceof Player p && chatSettingsManager != null) {
+                ChatSettings s = chatSettingsManager.getSettings(p);
+                return !s.isPublicChat();
+            }
+            return false;
+        });
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        Player dead = event.getEntity();
+        Component deathMsg = event.deathMessage();
+        if (deathMsg != null) {
+            event.deathMessage(null);
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                if (shouldReceiveDeath(p, dead)) {
+                    p.sendMessage(deathMsg);
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerAdvancement(PlayerAdvancementDoneEvent event) {
+        Player advPlayer = event.getPlayer();
+        Component msg = event.message();
+        if (msg != null) {
+            event.message(null);
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                if (shouldReceiveAdvancement(p, advPlayer)) {
+                    p.sendMessage(msg);
+                }
+            }
+        }
+    }
+
+    private boolean shouldReceiveJoinLeave(Player viewer, Player target) {
+        if (chatSettingsManager == null) return true;
+        ChatSettings s = chatSettingsManager.getSettings(viewer);
+        ChatVisibility mode = s.getJoinLeaveMessages();
+        if (mode == ChatVisibility.OFF) return false;
+        if (mode == ChatVisibility.ANYONE) return true;
+        return chatSettingsManager.isFriend(viewer.getUniqueId(), target.getUniqueId());
+    }
+
+    private boolean shouldReceiveDeath(Player viewer, Player target) {
+        if (chatSettingsManager == null) return true;
+        ChatSettings s = chatSettingsManager.getSettings(viewer);
+        ChatVisibility mode = s.getDeathMessages();
+        if (mode == ChatVisibility.OFF) return false;
+        if (mode == ChatVisibility.ANYONE) return true;
+        return chatSettingsManager.isFriend(viewer.getUniqueId(), target.getUniqueId());
+    }
+
+    private boolean shouldReceiveAdvancement(Player viewer, Player target) {
+        if (chatSettingsManager == null) return true;
+        ChatSettings s = chatSettingsManager.getSettings(viewer);
+        ChatVisibility mode = s.getAdvancementMessages();
+        if (mode == ChatVisibility.OFF) return false;
+        if (mode == ChatVisibility.ANYONE) return true;
+        return chatSettingsManager.isFriend(viewer.getUniqueId(), target.getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEntityToggleGlide(EntityToggleGlideEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            if (player.getWorld().getName().toLowerCase().contains("lobby2") && event.isGliding()) {
+                event.setCancelled(true);
+                player.setGliding(false);
+                player.sendMessage(Component.text("Kamu tidak dapat menggunakan Elytra di lobby!", NamedTextColor.RED));
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPrePlayerPlayerSit(PrePlayerPlayerSitEvent event) {
+        Player target = event.getTarget();
+        if (target != null && isCitizensNPC(target)) {
+            event.setCancelled(true);
+        }
+    }
+
+    public boolean isCitizensNPC(Entity entity) {
+        if (entity == null) return false;
+        if (entity.hasMetadata("NPC")) return true;
+        if (Bukkit.getPluginManager().isPluginEnabled("Citizens")) {
+            try {
+                return CitizensAPI.getNPCRegistry().isNPC(entity);
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static boolean isBlockedHomeWorld(String worldName) {
+        if (worldName == null) return false;
+        String name = worldName.toLowerCase();
+        return BLOCKED_HOME_WORLDS.contains(name) || name.contains("lobby2");
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerCommandSend(PlayerCommandSendEvent event) {
+        Player player = event.getPlayer();
+        if (!player.hasPermission("slowy.admin")) {
+            event.getCommands().remove("customsettings");
+            event.getCommands().remove("slowy:customsettings");
+            event.getCommands().remove("sbsettings");
+            event.getCommands().remove("slowy:sbsettings");
+            event.getCommands().remove("slowysettings");
+            event.getCommands().remove("slowy:slowysettings");
+            event.getCommands().remove("customhomes");
+            event.getCommands().remove("slowy:customhomes");
+            event.getCommands().remove("custompay");
+            event.getCommands().remove("slowy:custompay");
+            event.getCommands().remove("slowypay");
+            event.getCommands().remove("slowy:slowypay");
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
+        Player player = event.getPlayer();
+        String rawMsg = event.getMessage().trim();
+        String msg = rawMsg.startsWith("/") ? rawMsg.substring(1).trim() : rawMsg;
+        String[] parts = msg.split("\\s+");
+        if (parts.length == 0) return;
+
+        String cmd = parts[0].toLowerCase();
+
+        // 1. Block sethome in blocked worlds (lobby2)
+        if (isBlockedHomeWorld(player.getWorld().getName())) {
+            if (cmd.equals("sethome") || cmd.equals("esethome") || cmd.equals("createhome")
+                    || cmd.endsWith(":sethome") || cmd.endsWith(":esethome") || cmd.endsWith(":createhome")) {
+                event.setCancelled(true);
+                player.sendMessage(Component.text("Kamu tidak dapat membuat home di world ini!", NamedTextColor.RED));
+                return;
+            }
+        }
+
+        // 2. Private message privacy filtering
+        if (parts.length >= 2 && chatSettingsManager != null) {
+            if (cmd.equals("msg") || cmd.equals("tell") || cmd.equals("w") || cmd.equals("whisper")
+                    || cmd.equals("pm") || cmd.equals("emsg") || cmd.equals("etell") || cmd.equals("ewhisper") || cmd.equals("epm")
+                    || cmd.endsWith(":msg") || cmd.endsWith(":tell") || cmd.endsWith(":w") || cmd.endsWith(":whisper")) {
+                String targetName = parts[1];
+                Player target = Bukkit.getPlayer(targetName);
+                if (target != null && target.isOnline() && !target.getUniqueId().equals(player.getUniqueId())) {
+                    ChatSettings targetSettings = chatSettingsManager.getSettings(target);
+                    ChatVisibility mode = targetSettings.getPrivateMessages();
+                    if (mode == ChatVisibility.OFF) {
+                        event.setCancelled(true);
+                        player.sendMessage(Component.text("Pemain ini menonaktifkan pesan pribadi.", NamedTextColor.RED));
+                    } else if (mode == ChatVisibility.FRIENDS) {
+                        if (!chatSettingsManager.isFriend(target.getUniqueId(), player.getUniqueId())) {
+                            event.setCancelled(true);
+                            player.sendMessage(Component.text("Pemain ini hanya menerima pesan pribadi dari teman.", NamedTextColor.RED));
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -204,6 +422,7 @@ public class SlowyPlugin extends JavaPlugin implements CommandExecutor, Listener
                     }
                 }
             }
+            case "back", "backtomenu" -> openGreetingDialog(player);
             default -> openHomesDialog(player);
         }
 
@@ -212,29 +431,78 @@ public class SlowyPlugin extends JavaPlugin implements CommandExecutor, Listener
 
     private void handleSettingsCommand(Player player, String[] args) {
         if (args.length == 0) {
-            openScoreboardSettingsDialog(player);
+            openSettingsDialog(player);
             return;
         }
 
         String sub = args[0].toLowerCase();
         switch (sub) {
             case "scoreboard" -> openScoreboardSettingsDialog(player);
+            case "chat" -> openChatSettingsDialog(player);
             case "back" -> openSettingsDialog(player);
             case "toggle" -> {
                 if (args.length >= 2) {
                     String option = args[1].toLowerCase();
                     switch (option) {
-                        case "scoreboard", "master" -> scoreboardSettingsManager.toggleScoreboard(player);
-                        case "money" -> scoreboardSettingsManager.toggleMoney(player);
-                        case "shards" -> scoreboardSettingsManager.toggleShards(player);
-                        case "kills" -> scoreboardSettingsManager.toggleKills(player);
-                        case "deaths" -> scoreboardSettingsManager.toggleDeaths(player);
-                        case "playtime" -> scoreboardSettingsManager.togglePlaytime(player);
+                        case "scoreboard", "master" -> {
+                            scoreboardSettingsManager.toggleScoreboard(player);
+                            openScoreboardSettingsDialog(player);
+                        }
+                        case "money" -> {
+                            scoreboardSettingsManager.toggleMoney(player);
+                            openScoreboardSettingsDialog(player);
+                        }
+                        case "shards" -> {
+                            scoreboardSettingsManager.toggleShards(player);
+                            openScoreboardSettingsDialog(player);
+                        }
+                        case "kills" -> {
+                            scoreboardSettingsManager.toggleKills(player);
+                            openScoreboardSettingsDialog(player);
+                        }
+                        case "deaths" -> {
+                            scoreboardSettingsManager.toggleDeaths(player);
+                            openScoreboardSettingsDialog(player);
+                        }
+                        case "playtime" -> {
+                            scoreboardSettingsManager.togglePlaytime(player);
+                            openScoreboardSettingsDialog(player);
+                        }
+                        case "chat_public" -> {
+                            chatSettingsManager.togglePublicChat(player);
+                            openChatSettingsDialog(player);
+                        }
+                        case "chat_pm" -> {
+                            chatSettingsManager.togglePrivateMessages(player);
+                            openChatSettingsDialog(player);
+                        }
+                        case "chat_server" -> {
+                            chatSettingsManager.toggleServerChat(player);
+                            openChatSettingsDialog(player);
+                        }
+                        case "chat_hotbar" -> {
+                            chatSettingsManager.toggleServerHotbar(player);
+                            openChatSettingsDialog(player);
+                        }
+                        case "chat_death" -> {
+                            chatSettingsManager.toggleDeathMessages(player);
+                            openChatSettingsDialog(player);
+                        }
+                        case "chat_advancement" -> {
+                            chatSettingsManager.toggleAdvancementMessages(player);
+                            openChatSettingsDialog(player);
+                        }
+                        case "chat_joinleave" -> {
+                            chatSettingsManager.toggleJoinLeaveMessages(player);
+                            openChatSettingsDialog(player);
+                        }
+                        default -> openSettingsDialog(player);
                     }
+                } else {
+                    openSettingsDialog(player);
                 }
-                openScoreboardSettingsDialog(player);
             }
-            default -> openScoreboardSettingsDialog(player);
+            default -> openSettingsDialog(player);
         }
     }
 
@@ -389,6 +657,92 @@ public class SlowyPlugin extends JavaPlugin implements CommandExecutor, Listener
         player.showDialog(dialog);
     }
 
+    public void openChatSettingsDialog(Player player) {
+        ChatSettings s = chatSettingsManager.getSettings(player);
+
+        List<ActionButton> buttons = new ArrayList<>();
+
+        // 1. Public Chat: ON / OFF
+        buttons.add(ActionButton.builder(Component.text("Public Chat: ", NamedTextColor.WHITE)
+                        .append(s.isPublicChat() ? Component.text("ON", NamedTextColor.GREEN) : Component.text("OFF", NamedTextColor.RED)))
+                .width(200)
+                .action(DialogAction.staticAction(ClickEvent.runCommand("/customsettings toggle chat_public")))
+                .build());
+
+        // 2. Private Messages: Anyone / Friends / OFF
+        buttons.add(ActionButton.builder(Component.text("Private Messages: ", NamedTextColor.WHITE)
+                        .append(s.getPrivateMessages().toComponent()))
+                .width(200)
+                .action(DialogAction.staticAction(ClickEvent.runCommand("/customsettings toggle chat_pm")))
+                .build());
+
+        // 3. Server Chat Messages: ON / OFF
+        buttons.add(ActionButton.builder(Component.text("Server Chat Messages: ", NamedTextColor.WHITE)
+                        .append(s.isServerChatMessages() ? Component.text("ON", NamedTextColor.GREEN) : Component.text("OFF", NamedTextColor.RED)))
+                .width(200)
+                .action(DialogAction.staticAction(ClickEvent.runCommand("/customsettings toggle chat_server")))
+                .build());
+
+        // 4. Server Hotbar Messages: ON / OFF
+        buttons.add(ActionButton.builder(Component.text("Server Hotbar Messages: ", NamedTextColor.WHITE)
+                        .append(s.isServerHotbarMessages() ? Component.text("ON", NamedTextColor.GREEN) : Component.text("OFF", NamedTextColor.RED)))
+                .width(200)
+                .action(DialogAction.staticAction(ClickEvent.runCommand("/customsettings toggle chat_hotbar")))
+                .build());
+
+        // 5. Death Messages: Anyone / Friends / OFF
+        buttons.add(ActionButton.builder(Component.text("Death Messages: ", NamedTextColor.WHITE)
+                        .append(s.getDeathMessages().toComponent()))
+                .width(200)
+                .action(DialogAction.staticAction(ClickEvent.runCommand("/customsettings toggle chat_death")))
+                .build());
+
+        // 6. Advancement Messages: Anyone / Friends / OFF
+        buttons.add(ActionButton.builder(Component.text("Advancement Messages: ", NamedTextColor.WHITE)
+                        .append(s.getAdvancementMessages().toComponent()))
+                .width(200)
+                .action(DialogAction.staticAction(ClickEvent.runCommand("/customsettings toggle chat_advancement")))
+                .build());
+
+        // 7. Join/Leave Messages: Anyone / Friends / OFF
+        buttons.add(ActionButton.builder(Component.text("Join/Leave Messages: ", NamedTextColor.WHITE)
+                        .append(s.getJoinLeaveMessages().toComponent()))
+                .width(200)
+                .action(DialogAction.staticAction(ClickEvent.runCommand("/customsettings toggle chat_joinleave")))
+                .build());
+
+        ActionButton exitAction = ActionButton.builder(Component.translatable("gui.back"))
+                .width(200)
+                .action(DialogAction.staticAction(ClickEvent.runCommand("/customsettings back")))
+                .build();
+
+        DialogBase base = DialogBase.builder(Component.text("Chat Settings"))
+                .pause(false)
+                .afterAction(DialogBase.DialogAfterAction.NONE)
+                .build();
+
+        MultiActionType type = DialogType.multiAction(buttons)
+                .columns(1)
+                .exitAction(exitAction)
+                .build();
+
+        Dialog dialog = Dialog.create(factory -> factory.empty().base(base).type(type));
+        player.showDialog(dialog);
+    }
+
+    public void openGreetingDialog(Player player) {
+        try {
+            Dialog greetingDialog = RegistryAccess.registryAccess()
+                    .getRegistry(RegistryKey.DIALOG)
+                    .get(TypedKey.create(RegistryKey.DIALOG, Key.key("slowy", "greeting_dialog")));
+            if (greetingDialog != null) {
+                player.showDialog(greetingDialog);
+                return;
+            }
+        } catch (Throwable ignored) {}
+        player.performCommand("showdialog slowy:greeting_dialog");
+    }
+
     public void openSettingsDialog(Player player) {
         try {
             Dialog settingsDialog = RegistryAccess.registryAccess()
@@ -487,6 +841,11 @@ public class SlowyPlugin extends JavaPlugin implements CommandExecutor, Listener
             }
         }
 
+        ActionButton exitAction = ActionButton.builder(Component.translatable("gui.back"))
+                .width(200)
+                .action(DialogAction.staticAction(ClickEvent.runCommand("/customhomes back")))
+                .build();
+
         DialogBase base = DialogBase.builder(Component.text("Homes"))
                 .body(List.of(DialogBody.item(BED_ITEM).build()))
                 .pause(false)
@@ -494,7 +853,8 @@ public class SlowyPlugin extends JavaPlugin implements CommandExecutor, Listener
                 .build();
 
         MultiActionType type = DialogType.multiAction(buttons)
-                .columns(MAX_HOME_SLOTS)
+                .columns(2)
+                .exitAction(exitAction)
                 .build();
 
         Dialog dialog = Dialog.create(factory -> factory.empty().base(base).type(type));
@@ -502,6 +862,11 @@ public class SlowyPlugin extends JavaPlugin implements CommandExecutor, Listener
     }
 
     public void openCreateHomeDialog(Player player) {
+        if (isBlockedHomeWorld(player.getWorld().getName())) {
+            player.sendMessage(Component.text("Kamu tidak dapat membuat home di world ini!", NamedTextColor.RED));
+            return;
+        }
+
         TextDialogInput nameInput = DialogInput.text("home_name", Component.text("Nama Home (Maks. 12 Karakter)"))
                 .maxLength(MAX_HOME_NAME_LENGTH)
                 .build();
@@ -621,6 +986,11 @@ public class SlowyPlugin extends JavaPlugin implements CommandExecutor, Listener
     // ==========================================
 
     private void handleSetHome(Player player, String homeName) {
+        if (isBlockedHomeWorld(player.getWorld().getName())) {
+            player.sendMessage(Component.text("Kamu tidak dapat membuat home di world ini!", NamedTextColor.RED));
+            return;
+        }
+
         if (homeName.isEmpty()) {
             player.sendMessage(Component.text("Nama home tidak boleh kosong!", NamedTextColor.RED));
             return;

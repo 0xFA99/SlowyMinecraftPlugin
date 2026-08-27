@@ -30,8 +30,8 @@
       },
       "width": 150,
       "action": {
-        "type": "minecraft:show_dialog",
-        "dialog": "slowy:settings_chat_dialog"
+        "type": "minecraft:run_command",
+        "command": "/customsettings chat"
       }
     },
     {
