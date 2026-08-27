@@ -9,7 +9,7 @@ rm -rf "$DIR/build"
 mkdir -p "$DIR/build/classes"
 
 echo "==> Mengumpulkan libraries classpath..."
-CP=$(find "$SERVER_DIR/libraries" -name "*.jar" | tr '\n' ':'):"$SERVER_DIR/plugins/UltimateDonutSmp-1.4.1.jar":"$SERVER_DIR/plugins/EssentialsX-2.22.0.jar":"$SERVER_DIR/plugins/VaultUnlocked-2.20.2.jar":"$SERVER_DIR/plugins/GSit-3.5.1.jar":"$SERVER_DIR/plugins/Citizens-2.0.43-b4232.jar"
+CP=$(find "$SERVER_DIR/libraries" -name "*.jar" | tr '\n' ':'):"$SERVER_DIR/plugins/UltimateDonutSmp-1.4.1.jar":"$SERVER_DIR/plugins/EssentialsX-2.22.0.jar":"$SERVER_DIR/plugins/VaultUnlocked-2.20.2.jar":"$SERVER_DIR/plugins/GSit-3.5.1.jar":"$SERVER_DIR/plugins/Citizens-2.0.43-b4232.jar":"$SERVER_DIR/plugins/PlaceholderAPI-2.12.3.jar"
 
 echo "==> Mengompilasi kode Java..."
 find "$DIR/src/main/java" -name "*.java" > "$DIR/sources.txt"
