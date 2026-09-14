@@ -1,0 +1,26 @@
+name: SlowyCore2
+version: 2.0.0
+main: dev.slowy.core.SlowyCore
+api-version: '1.21'
+author: SlowyDev
+description: SlowyCore2 - Modern High-Performance Core Plugin for PaperMC 26.2 on Java 25 LTS
+softdepend:
+  - Vault
+  - LuckPerms
+  - SkinsRestorer
+  - AuthMe
+
+
+permissions:
+  slowy.discord:
+    description: Allows viewing the server Discord community invite link.
+    default: true
+  slowy.use:
+    description: Allows using basic SlowyCore commands.
+    default: true
+  slowy.report:
+    description: Allows using /report command.
+    default: true
+  slowy.admin.holo:
+    description: Allows managing server holograms.
+    default: op
